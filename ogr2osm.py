@@ -243,6 +243,14 @@ def parseFeature(ogrfeature, fieldNames, reproject):
 
         feature = Feature()
         feature.tags = getFeatureTags(ogrfeature, fieldNames)
+
+        # THIS IS A HACK TO REPLACE IDS
+        # works for ways and nodes
+        # BUT ONLY if the nodes are imported in the geojson file first
+        # ways have to be last
+        if len(feature.tags['id']) > 0:
+            geometry.replaceid(feature.tags['id'])
+
         feature.geometry = geometry
         geometry.addparent(feature)
 

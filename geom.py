@@ -10,11 +10,14 @@ class Geometry(object):
     elementIdCounterIncr = -1
     geometries = []
     def __init__(self):
-        self.id = getNewID()
+        self.id = getNewID(self)
         self.parents = set()
         Geometry.geometries.append(self)
     def replacejwithi(self, i, j):
         pass
+    def replaceid(self, new_id):
+        print('new_id', new_id)
+        self.id = new_id
     def addparent(self, parent):
         self.parents.add(parent)
     def removeparent(self, parent, shoulddestroy=True):
