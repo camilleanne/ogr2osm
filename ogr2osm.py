@@ -90,7 +90,6 @@ except ImportError:
 l.basicConfig(level=l.DEBUG, format="%(message)s")
 LINESTRING_POINTS = {}
 
-
 def openData(source):
     if re.match('^PG:', source):
         return openDatabaseSource(source)
@@ -301,17 +300,29 @@ def parseLineString(ogrgeometry):
     # LineString.GetPoint() returns a tuple, so we can't call parsePoint on it
     # and instead have to create the point ourself
     global LINESTRING_POINTS
-    for i in range(ogrgeometry.GetPointCount()):
+    point_range = range(ogrgeometry.GetPointCount());
+    point_range_len = len(point_range) - 1;
+
+    for i in point_range:
         (x, y, unused) = ogrgeometry.GetPoint(i)
         (rx, ry) = (int(round(x*10**OPTIONS.roundingDigits)), int(round(y*10**OPTIONS.roundingDigits)))
         (x, y) = (int(round(x*10**OPTIONS.significantDigits)), int(round(y*10**OPTIONS.significantDigits)))
         if (rx,ry) in LINESTRING_POINTS:
             mypoint = LINESTRING_POINTS[(rx,ry)]
+            # THIS IS A HACK TO DEAL WITH OVERPASSES
+            # IF THE POINT ALREADY EXISTS BUT IS IN THE
+            # MIDDLE OF A WAY IT SHOULDN'T INTERCEPT
+            # WITH ANY OTHER POINTS SO IGNORE IT
+            if (i == 0 ) or (i == point_range_len):
+                geometry.points.append(mypoint)
+                mypoint.addparent(geometry)
+            else:
+                print((rx,ry))
         else:
             mypoint = Point(x, y)
             LINESTRING_POINTS[(rx,ry)] = mypoint
-        geometry.points.append(mypoint)
-        mypoint.addparent(geometry)
+            geometry.points.append(mypoint)
+            mypoint.addparent(geometry)
     return geometry
 
 
